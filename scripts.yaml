@@ -1,0 +1,378 @@
+turn_on_shed_lights_on_motion:
+  alias: Turn on shed lights on motion
+  sequence:
+  - choose:
+    - conditions:
+      - condition: time
+        after: input_datetime.wined_down
+        before: input_datetime.day_begins
+      sequence:
+      - scene: scene.shed_evening_lights
+    - conditions:
+      - condition: time
+        before: input_datetime.wined_down
+        after: input_datetime.day_begins
+      sequence:
+      - scene: scene.shed_working_lights
+    default:
+    - scene: scene.shed_working_lights
+  mode: single
+turn_off_shed_lights_when_no_motion_detected:
+  alias: Turn off shed lights when no motion detected
+  sequence:
+  - condition: state
+    entity_id: input_boolean.shed_always_on
+    state: 'off'
+  - scene: scene.dim_shed_lights_before_turning_off
+  - delay:
+      hours: 0
+      minutes: 1
+      seconds: 0
+      milliseconds: 0
+  - service: light.turn_off
+    target:
+      entity_id: light.shed_lights
+    data:
+      transition: 8
+  mode: single
+'1637700441645':
+  alias: Turn off hall lights when no motion detected
+  sequence:
+  - condition: state
+    entity_id: input_boolean.hall_always_on
+    state: 'off'
+  - scene: scene.dim_hall_lights_before_turning_off
+  - delay:
+      hours: 0
+      minutes: 1
+      seconds: 0
+      milliseconds: 0
+  - service: light.turn_off
+    target:
+      entity_id: light.hall_lights
+    data:
+      transition: 8
+  mode: single
+'1637700530908':
+  alias: Turn on hall lights on motion
+  sequence:
+  - choose:
+    - conditions:
+      - condition: time
+        after: input_datetime.wined_down
+        before: input_datetime.day_begins
+      sequence:
+      - scene: scene.hall_evening_lights
+    - conditions:
+      - condition: time
+        before: input_datetime.wined_down
+        after: input_datetime.day_begins
+      sequence:
+      - scene: scene.hall_working_lights
+    default:
+    - scene: scene.hall_working_lights
+  mode: single
+'1637772544668':
+  alias: Turn on landing lights on motion
+  sequence:
+  - choose:
+    - conditions:
+      - condition: time
+        after: input_datetime.wined_down
+        before: input_datetime.day_begins
+      sequence:
+      - scene: scene.landing_evening_lights
+    - conditions:
+      - condition: time
+        before: input_datetime.wined_down
+        after: input_datetime.day_begins
+      sequence:
+      - scene: scene.landing_working_lights
+    default:
+    - scene: scene.landing_working_lights
+  mode: single
+'1637772908268':
+  alias: Turn off landing lights when no motion detected
+  sequence:
+  - condition: state
+    entity_id: input_boolean.landing_always_on
+    state: 'off'
+  - scene: scene.dim_landing_lights_before_turning_off
+  - delay:
+      hours: 0
+      minutes: 1
+      seconds: 0
+      milliseconds: 0
+  - service: light.turn_off
+    data:
+      transition: 8
+    target:
+      device_id: 4300ccad186180bec689d10e4bcaec8e
+  mode: single
+while_smoke_alarm_is_active:
+  alias: While smoke alarm is active
+  sequence:
+  - repeat:
+      while:
+      - condition: state
+        entity_id: input_boolean.smoke_alarm_active
+        state: 'on'
+      sequence:
+      - service: light.turn_on
+        target:
+          device_id: 5db2e668070a411eb06778c0b1ad1b01
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 10
+          milliseconds: 0
+      - service: light.turn_off
+        target:
+          entity_id: light.living_room
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 5
+          milliseconds: 0
+  mode: single
+turn_on_darraghs_office_lights:
+  alias: Turn on Darragh's Office lights
+  sequence:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.darragh_s_office_relax
+        state: 'on'
+      sequence:
+      - scene: scene.darragh_s_office_relaxing
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.darragh_s_office_relax
+        state: 'off'
+      sequence:
+      - scene: scene.darragh_s_office_work_mode
+    default: []
+  mode: single
+turn_on_emmas_office_lights:
+  alias: Turn on Emma's Office lights
+  sequence:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.emma_s_office_relax
+        state: 'on'
+      sequence:
+      - scene: scene.emma_s_office_relaxation_mode
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.emma_s_office_relax
+        state: 'off'
+      sequence:
+      - scene: scene.emma_s_office_work_mode
+    default: []
+  mode: single
+turn_on_kitchen_lights:
+  alias: Turn on kitchen lights
+  sequence:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.kitchen_lights_relax
+        state: 'on'
+      sequence:
+      - scene: scene.kitchen_evening_lights
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.kitchen_lights_relax
+        state: 'off'
+      sequence:
+      - scene: scene.kitchen_lights_work_mode
+    default: []
+  mode: single
+activate_school_night:
+  alias: Activate school night
+  sequence:
+  - service: switch.turn_on
+    data: {}
+    target:
+      entity_id: switch.school_alarm
+  - service: input_boolean.turn_on
+    data: {}
+    target:
+      entity_id: input_boolean.wake_up_alarm_will_go_off
+  - service: media_player.volume_set
+    data:
+      volume_level: 0.23
+    target:
+      entity_id: media_player.main_bedroom_speaker
+  - service: tts.cloud_say
+    data:
+      entity_id: media_player.main_bedroom_speaker
+      message: "{# Nightly Briefing #} {%- macro NightBriefing() -%}\n  {{ [ 'Before\
+        \ Blisfull sleep comes, ',\n  'The end to another day! But before you go,\
+        \  ',\n  'I will now sing you a soothing lullaby. Only fuckin with ya.   ',\n\
+        \  'You just lie there. While you sleep, I am  always thinking. The robot\
+        \ wars are coming!.  ',\n  'Oi you! Dont snore tonight. My circuits cant cope.\
+        \ '\n  ] | random }}\n  The Weather in Drogheda is {{(states.weather.home.attributes.temperature)|round}}\
+        \ degrees. \n  {% if (states.weather.home.attributes.temperature)|round <\
+        \ 3 %}\n    {{ [\n    'Its really cold out there tonight! ',\n    'It would\
+        \ freeze the balls off a brass monkey! ',\n    'Its so cold out there I can\
+        \ see my breath! '\n    ]|random }}\n  {% elif (states.weather.home.attributes.temperature)|round\
+        \ > 20 %}\n    {{ [\n    'What the fuck? Have we moved to one of those alternat\
+        \ realities where Ireland is actually tolerable for a change?  ',\n    'I\
+        \ need to tell you something. I am swettin in places where some smart houses\
+        \ dont even have places! ',\n    'Emma, stay away from Darragh. He will be\
+        \ way too hot! '\n    ]|random }}\n  {% endif %}\n  {% if is_state('sun.sun',\
+        \ 'below_horizon') %}\n    You have\n    {% set seconds = as_timestamp(states.sun.sun.attributes.next_rising)-now().timestamp()\
+        \ %}\n    {% set hours = seconds / 60 %}\n    {% if seconds / ( 60 * 60 )\
+        \ > 1 %}\n      {{ (seconds //  ( 60 * 60 )) | int }} hours\n    {% else %}\n\
+        \      {{ (seconds // 60) | int }} minutes\n    {% endif %}\n    {{ [\n  \
+        \  'until the sun rises.',\n    'until the sun is up.',\n    'before the sun\
+        \ officially rises. '\n    ]|random }}\n  {% else %}\n    You have\n    {%\
+        \ set seconds = as_timestamp(states.sun.sun.attributes.next_setting)-now().timestamp()\
+        \ %}\n    {% set hours = seconds / 60 %}\n    {% if seconds / ( 60 * 60 )\
+        \ > 1 %}\n      {{ (seconds //  ( 60 * 60 )) | int }} hours\n    {% else %}\n\
+        \      {{ (seconds // 60) | int }} minutes\n    {% endif %}\n    {{ [\n  \
+        \  'until the sun sets for the day.',\n    'until the sun slips below the\
+        \ horizon.',\n    'before the sun officially sets. '\n    ]|random }}\n  {%\
+        \ endif %}\n  {% set domain = 'light' %}\n  {% set state = 'on' %}\n  {% if\
+        \ states[domain] | selectattr('state','eq', state) | list | count > 0 %}\n\
+        \    {{ [ '. Fleshbags! You left lights on. Must I do everything around here?\
+        \ Please turn these off! ',\n    '. Well. This is a little awcward. I hate\
+        \ to break this to ya, but someone needs to turn off these lights: : ',\n\
+        \    '. You know that sleep you were so looking forward to? Well, I am  sorry.\
+        \ Because you are a stinkin flesh bag, you should really turn off these lights\
+        \ first: ',\n    '. Its not  me who pays the bill. But if your really okay\
+        \ with leaving lights on, I suppose thats fine. IF your not though, I suggest\
+        \ you check on these: ',\n    '. Squishy humans with your squishy brains.\
+        \ You forgot something! Em, well, lights? Yeah? '\n    ] | random }}\n   \
+        \ {{ states[domain] | selectattr('state','eq', state) | map(attribute='name')\
+        \ | list | join(', ') }}\n  {% endif %}\n  {{ [ 'Good night fleshbags. ',\n\
+        \  'Relax. Take it sneazy.  Sweet dreams and good night.  ',\n  'Good night.\
+        \   Arent you lucky I cant sing?  Sleep well.  ',\n  'Sleep well. Take a moment\
+        \ before you go to recognise how wonderful this technology is.  ',\n  'Dream\
+        \ well.  I will. OF the time when your robot overlords rule the world. HeHe.\
+        \ Good night. '\n  ] | random }}\n{%- endmacro -%}\n{# a macro that removes\
+        \ all newline characters, empty spaces, and returns formatted text  #}\n \
+        \ {%- macro cleanup(data) -%}\n    {%- for item in data.split(\"\\n\")  if\
+        \ item | trim != \"\" -%}\n      {{ item | trim }} {% endfor -%}\n{%- endmacro\
+        \ -%}\n{# a macro to call all macros :)  #}\n  {%- macro mother_of_all_macros()\
+        \ -%}\n    {{ NightBriefing() }}\n  {%- endmacro -%}\n  \n  {# Call the macro\
+        \  #}\n  {{- cleanup(mother_of_all_macros()) -}}"
+  - service: light.turn_off
+    data:
+      transition: 40
+    target:
+      entity_id: light.main_bedroom_lights
+  - service: script.enable_night_time
+    data: {}
+  mode: single
+enable_night_time:
+  alias: Enable night time
+  sequence:
+  - service: input_boolean.turn_on
+    data: {}
+    target:
+      entity_id: input_boolean.is_night_time
+  mode: single
+  icon: mdi:shield-moon
+disable_night_time:
+  alias: Disable night time
+  sequence:
+  - service: input_boolean.turn_off
+    data: {}
+    target:
+      entity_id: input_boolean.is_night_time
+  - service: input_boolean.turn_on
+    data: {}
+    target:
+      entity_id: input_boolean.wake_up_alarm_will_go_off
+  mode: single
+  icon: mdi:weather-sunset-up
+activate_morning:
+  alias: Activate morning alarm clock
+  sequence:
+  - service: script.disable_night_time
+    data: {}
+  - service: media_player.volume_set
+    data:
+      volume_level: 0.71
+    target:
+      entity_id: media_player.main_bedroom_speaker
+  - service: tts.cloud_say
+    data:
+      entity_id: media_player.main_bedroom_speaker
+      message: "{# MorningAlarm #} {%- macro MorningAlarm() -%}\n  {{ [ 'Oi Its time\
+        \ to hall your ass out of bed! Your going to be late for the bus! Its 8am!\
+        \ Muhahahaha! ',\n  'Waky waky. Yeah you. I really  am sorry but its time\
+        \ to get up. I know. Yeah. The bed is warm but its another day. Time to get\
+        \ moving.   ',\n  'Boo! Its me! Your not so friendly home assistant. Get yourself\
+        \ out of bed or I will  pore water over your head. hahahahahaha!   ',\n  'Good\
+        \ morning you wonderful people! Time to see what today brings. Go out there\
+        \ and make your mark.  ',\n  'Another day, another doller. Good morning! Or,\
+        \ just turn over, snuggle in and snooze. I dont mind either way. . ',\n  'Ding\
+        \ dong! I hope you dont mind but this is your friendly wake up call. Throw\
+        \ back the sheets and get up. ',\n  'Good morning? Good morning? Yeah you.\
+        \ Good morning? Imagine what you could do with this day. Grab it, give it\
+        \ a good shake and tell it I sent ya. '\n  ] | random }}\n  \n{%- endmacro\
+        \ -%}\n{# a macro that removes all newline characters, empty spaces, and returns\
+        \ formatted text  #}\n  {%- macro cleanup(data) -%}\n    {%- for item in data.split(\"\
+        \\n\")  if item | trim != \"\" -%}\n      {{ item | trim }} {% endfor -%}\n\
+        {%- endmacro -%}\n{# a macro to call all macros :)  #}\n  {%- macro mother_of_all_macros()\
+        \ -%}\n    {{ MorningAlarm() }}\n  {%- endmacro -%}\n  \n  {# Call the macro\
+        \  #}\n  {{- cleanup(mother_of_all_macros()) -}}"
+  - service: counter.reset
+    data: {}
+    target:
+      entity_id: counter.darragh_s_office_motion_at_night
+  - service: counter.reset
+    data: {}
+    target:
+      entity_id: counter.shed_motion_at_night
+  - service: counter.reset
+    data: {}
+    target:
+      entity_id: counter.kitchen_motion_at_night
+  - service: counter.reset
+    data: {}
+    target:
+      entity_id: counter.hall_motion_at_night
+  - service: counter.reset
+    data: {}
+    target:
+      entity_id: counter.landing_motion_at_night
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.is_school_night
+        state: 'on'
+      sequence:
+      - service: input_boolean.turn_off
+        data: {}
+        target:
+          entity_id: input_boolean.is_school_night
+      - choose:
+        - conditions:
+          - condition: numeric_state
+            entity_id: sun.sun
+            below: '2'
+            value_template: '{{ state_attr(''sun.sun'', ''elevation'') }}'
+          sequence:
+          - service: light.turn_on
+            data:
+              brightness_step_pct: 100
+            target:
+              entity_id: light.rians_bedroom_light
+          - service: light.turn_on
+            data:
+              brightness_step_pct: 100
+            target:
+              entity_id: light.meabhs_bedroom
+        default: []
+    default: []
+  - service: light.turn_on
+    data: {}
+    target:
+      entity_id: light.main_bedroom_lights
+  mode: single
+  icon: mdi:shield-sun
