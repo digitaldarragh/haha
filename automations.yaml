@@ -1,0 +1,463 @@
+- id: '1637620993209'
+  alias: Turn on shed lights to full when motion detected in the evening
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.shed_motion_sensor
+    to: 'on'
+  condition:
+  - condition: numeric_state
+    entity_id: sun.sun
+    value_template: '{{ state_attr(''sun.sun'', ''elevation'') }}'
+    below: '6'
+  action:
+  - service: script.turn_off
+    data:
+      entity_id: script.turn_off_shed_lights_when_no_motion_detected
+  - service: script.turn_on_shed_lights_on_motion
+  - wait_for_trigger:
+    - platform: state
+      entity_id: binary_sensor.shed_motion_sensor
+      to: 'off'
+      for: 00:02:00
+  - service: script.turn_off_shed_lights_when_no_motion_detected
+  mode: parallel
+  max: 10
+- id: '1637700906162'
+  alias: Turn on hall lights when  motion detected in the evening
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.hall_motion_sensor
+    to: 'on'
+  condition:
+  - condition: numeric_state
+    entity_id: sun.sun
+    value_template: '{{ state_attr(''sun.sun'', ''elevation'') }}'
+    below: '2'
+  action:
+  - service: script.turn_off
+    data:
+      entity_id: script.turn_off_hall_lights_when_no_motion_detected
+  - service: script.1637700530908
+  - wait_for_trigger:
+    - platform: state
+      entity_id: binary_sensor.hall_motion_sensor
+      to: 'off'
+      for: 00:02:00
+  - service: script.1637700441645
+  mode: parallel
+  max: 20
+- id: '1637772717766'
+  alias: Turn on landing lights when motion detected in the evening
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.landing_motion_sensor
+    to: 'on'
+  condition:
+  - condition: numeric_state
+    entity_id: sun.sun
+    value_template: '{{ state_attr(''sun.sun'', ''elevation'') }}'
+    below: '2'
+  action:
+  - service: script.turn_off
+    data:
+      entity_id: script.turn_off_landing_lights_when_no_motion_detected
+  - service: script.1637772544668
+  - wait_for_trigger:
+    - platform: state
+      entity_id: binary_sensor.landing_motion_sensor
+      to: 'off'
+      for: 00:02:00
+  - service: script.1637772908268
+  mode: parallel
+  max: 10
+- id: '1638726442115'
+  alias: 'Turn on hall lights when  front door opens in the evening '
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.front_door_contact_sensor
+    to: 'on'
+  condition:
+  - condition: numeric_state
+    entity_id: sun.sun
+    value_template: '{{ state_attr(''sun.sun'', ''elevation'') }}'
+    below: '2'
+  action:
+  - service: script.turn_off
+    data:
+      entity_id: script.turn_off_hall_lights_when_no_motion_detected
+  - service: script.1637700530908
+  - wait_for_trigger:
+    - platform: state
+      entity_id: binary_sensor.hall_motion_sensor
+      to: 'off'
+      for: 00:02:00
+  - service: script.1637700441645
+  mode: parallel
+  max: 20
+- id: '1639151552696'
+  alias: Turn off kitchen lights when no motion detected
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.kitchen_motion_sensor
+    to: 'Off'
+    for:
+      hours: 0
+      minutes: 20
+      seconds: 0
+  condition:
+  - condition: and
+    conditions:
+    - condition: state
+      entity_id: light.kitchen_at_cooker
+      state: 'on'
+  action:
+  - service: light.turn_off
+    target:
+      entity_id: light.kitchen_lights
+    data:
+      transition: 60
+  mode: single
+- id: '1639609273409'
+  alias: Speak when the front door is left open
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.front_door_contact_sensor
+    to: 'on'
+  condition: []
+  action:
+  - service: sonos.snapshot
+    data:
+      with_group: true
+      entity_id: media_player.kitchen_speaker
+  - service: tts.cloud_say
+    data:
+      entity_id: media_player.kitchen_speaker
+      message: "{# FrontDoorOpen #} {%- macro FrontDoorOpen() -%}\n  {{ [ 'Excuse\
+        \ me, the front door was just opened. ',\n  'Front door open.  ',\n  'Front\
+        \ door has been opened.   ',\n  'House breached! Oh sorry. Its just the front\
+        \ door was opened.  ',\n  'Hello! The front door is open. ',\n  'Oh joy! The\
+        \ front door is open. '\n  ] | random }}\n  \n{%- endmacro -%}\n{# a macro\
+        \ that removes all newline characters, empty spaces, and returns formatted\
+        \ text  #}\n  {%- macro cleanup(data) -%}\n    {%- for item in data.split(\"\
+        \\n\")  if item | trim != \"\" -%}\n      {{ item | trim }} {% endfor -%}\n\
+        {%- endmacro -%}\n{# a macro to call all macros :)  #}\n  {%- macro mother_of_all_macros()\
+        \ -%}\n    {{ FrontDoorOpen() }}\n  {%- endmacro -%}\n  \n  {# Call the macro\
+        \  #}\n  {{- cleanup(mother_of_all_macros()) -}}"
+  - service: media_player.volume_set
+    target:
+      device_id: 70bba59f4b20eafa7fd68ec09695f93c
+    data:
+      volume_level: 0.61
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 5
+      milliseconds: 0
+  - service: sonos.restore
+    data:
+      entity_id: media_player.kitchen_speaker
+  mode: single
+- id: '1639694104904'
+  alias: Set state when Darragh is away
+  description: ''
+  trigger:
+  - platform: zone
+    entity_id: device_tracker.darragh_s_phone
+    zone: zone.home
+    event: leave
+  condition: []
+  action:
+  - service: input_boolean.turn_on
+    target:
+      entity_id: input_boolean.darragh_away
+  mode: single
+- id: '1639694481299'
+  alias: Alert when Darragh's office door is open when Darragh is away
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.darraghs_office_door_contact_sensor
+    to: 'on'
+  condition:
+  - condition: and
+    conditions:
+    - condition: state
+      entity_id: input_boolean.darragh_away
+      state: 'on'
+  action:
+  - service: notify.notify
+    data:
+      message: Darragh's office door has been opened
+      title: Home security
+  mode: single
+- id: '1639697745113'
+  alias: Set state when Darragh is Home
+  description: ''
+  trigger:
+  - platform: zone
+    entity_id: device_tracker.darragh_s_phone
+    zone: zone.home
+    event: enter
+  condition: []
+  action:
+  - service: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.darragh_away
+  mode: single
+- id: '1640346803769'
+  alias: Turn on Christmas lights outside
+  description: ''
+  trigger:
+  - platform: time
+    at: '13:00:00'
+  condition: []
+  action:
+  - type: turn_on
+    device_id: aa1a79ddabdf4e84206ab6bfda52c643
+    entity_id: switch.christmas_lights_outside
+    domain: switch
+  - delay:
+      hours: 12
+      minutes: 0
+      seconds: 0
+      milliseconds: 0
+  - type: turn_off
+    device_id: aa1a79ddabdf4e84206ab6bfda52c643
+    entity_id: switch.christmas_lights_outside
+    domain: switch
+  mode: single
+- id: '1640720295730'
+  alias: Change Darragh's office to relaxing mode
+  description: ''
+  trigger:
+  - platform: webhook
+    webhook_id: '777'
+  condition: []
+  action:
+  - service: input_boolean.toggle
+    target:
+      entity_id: input_boolean.darragh_s_office_relax
+  - service: script.turn_on_darraghs_office_lights
+  mode: single
+- id: '1640873803951'
+  alias: Change Emma's office to relaxing mode
+  description: ''
+  trigger:
+  - platform: webhook
+    webhook_id: '778'
+  condition: []
+  action:
+  - service: input_boolean.toggle
+    target:
+      entity_id: input_boolean.emma_s_office_relax
+  - service: script.turn_on_emmas_office_lights
+  mode: single
+- id: '1640882320998'
+  alias: Change kitchen to relaxing mode
+  description: ''
+  trigger:
+  - platform: webhook
+    webhook_id: '779'
+  condition: []
+  action:
+  - service: input_boolean.toggle
+    target:
+      entity_id: input_boolean.kitchen_lights_relax
+  - service: script.turn_on_kitchen_lights
+  mode: single
+- id: '1640884516546'
+  alias: Turn on kitchen lights when motion detected
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.kitchen_motion_sensor
+    to: 'on'
+  condition:
+  - condition: numeric_state
+    entity_id: sun.sun
+    value_template: '{{ state_attr(''sun.sun'', ''elevation'') }}'
+    below: '2'
+  - condition: state
+    entity_id: light.kitchen_at_hot_press
+    state: 'off'
+  action:
+  - service: script.turn_on_kitchen_lights
+  mode: single
+- id: '1641402933123'
+  alias: Turn on Darragh's office  lights when motion detected
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.darraghs_office_motion_sensor
+    to: 'on'
+  condition:
+  - condition: numeric_state
+    entity_id: sun.sun
+    value_template: '{{ state_attr(''sun.sun'', ''elevation'') }}'
+    below: '2'
+  - condition: state
+    entity_id: light.middle
+    state: 'off'
+  action:
+  - service: script.turn_on_darraghs_office_lights
+  mode: single
+- id: '1643238393878'
+  alias: Speak good morning message when someone enters the kitchen in the morning
+    for the first time when alarm is set
+  description: 'When the wake up alarm is set, this will instruct the kitchen Sonos
+    speaker to speak a good mornig message. Just for fun. '
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.kitchen_motion_sensor
+    to: 'on'
+  condition:
+  - condition: state
+    entity_id: input_boolean.wake_up_alarm_will_go_off
+    state: 'on'
+  action:
+  - service: sonos.snapshot
+    data:
+      with_group: true
+      entity_id: media_player.kitchen_speaker
+  - service: tts.cloud_say
+    data:
+      entity_id: media_player.kitchen_speaker
+      message: 'Good morning! I hope today is one of the good ones. '
+  - service: media_player.volume_set
+    target:
+      device_id: 70bba59f4b20eafa7fd68ec09695f93c
+    data:
+      volume_level: 0.39
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 5
+      milliseconds: 0
+  - service: sonos.restore
+    data:
+      entity_id: media_player.kitchen_speaker
+  - service: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.wake_up_alarm_will_go_off
+  - service: sonos.play_queue
+    target:
+      entity_id: media_player.kitchen_speaker
+  mode: single
+- id: '1643240712012'
+  alias: Turn on main bedroom lamp when school alarm is set
+  description: ''
+  trigger:
+  - platform: template
+    value_template: "    {% set t1 = as_timestamp(strptime(states('sensor.date')+'\
+      \ '+states('sensor.time'),'%Y-%m-%d %H:%M')) | int %}\n    {% set t2 = as_timestamp(strptime(states('sensor.date')+'\
+      \ '+states('sensor.bedtime'),'%Y-%m-%d %H:%M')) | int -(60*1) %}\n    {{t1 ==\
+      \ t2}}"
+  condition:
+  - condition: template
+    value_template: '{{ (as_timestamp(now())-as_timestamp(states.sensor.Bedtime.last_updated))
+      <82800 }}'
+  action:
+  - service: light.turn_on
+    target:
+      entity_id: light.main_bedroom_lights
+    data:
+      transition: 60
+      brightness_pct: 2
+  mode: single
+- id: '1643639591035'
+  alias: 'Turn on hall lights when  back door opens in the evening '
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.back_door_sensor
+    to: 'on'
+  condition:
+  - condition: numeric_state
+    entity_id: sun.sun
+    value_template: '{{ state_attr(''sun.sun'', ''elevation'') }}'
+    below: '2'
+  action:
+  - service: script.turn_off
+    data:
+      entity_id: script.turn_off_hall_lights_when_no_motion_detected
+  - service: script.1637700530908
+  - wait_for_trigger:
+    - platform: state
+      entity_id: binary_sensor.hall_motion_sensor
+      to: 'off'
+      for: 00:02:00
+  - service: script.1637700441645
+  mode: parallel
+  max: 20
+- id: '1646634452420'
+  alias: Toggle Darragh's office lights on button press
+  description: ''
+  trigger:
+  - device_id: d94dbe63a56d35f6602cf7a3be578d30
+    domain: deconz
+    platform: device
+    type: remote_button_short_release
+    subtype: turn_on
+  condition: []
+  action:
+  - service: light.toggle
+    data: {}
+    target:
+      entity_id: light.darraghs_office_lights
+  mode: single
+- id: '1646636795813'
+  alias: Toggle light brightness in Darragh's office on button press
+  description: ''
+  trigger:
+  - device_id: d94dbe63a56d35f6602cf7a3be578d30
+    domain: deconz
+    platform: device
+    type: remote_button_short_release
+    subtype: dim_down
+  condition: []
+  action:
+  - service: input_boolean.toggle
+    target:
+      entity_id: input_boolean.darragh_s_office_relax
+    data: {}
+  - service: script.turn_on_darraghs_office_lights
+    data: {}
+  mode: single
+- id: '1646692630149'
+  alias: Turn on darragh's wall plug on button press
+  description: ''
+  trigger:
+  - device_id: d94dbe63a56d35f6602cf7a3be578d30
+    domain: deconz
+    platform: device
+    type: remote_button_short_release
+    subtype: dim_up
+  condition: []
+  action:
+  - type: turn_on
+    device_id: 34a4b70639737132ea1857c6a6b9ba18
+    entity_id: switch.darraghs_wall_plug
+    domain: switch
+  mode: single
+- id: '1646692704070'
+  alias: Turn off darragh's wall plug on button long press
+  description: ''
+  trigger:
+  - device_id: d94dbe63a56d35f6602cf7a3be578d30
+    domain: deconz
+    platform: device
+    type: remote_button_long_release
+    subtype: dim_up
+  condition: []
+  action:
+  - type: turn_off
+    device_id: 34a4b70639737132ea1857c6a6b9ba18
+    entity_id: switch.darraghs_wall_plug
+    domain: switch
+  mode: single
